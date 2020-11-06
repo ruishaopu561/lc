@@ -499,6 +499,7 @@ public:
 + 21.输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否可能为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如序列1,2,3,4,5是某栈的压入顺序，序列4,5,3,2,1是该压栈序列对应的一个弹出序列，但4,3,5,1,2就不可能是该压栈序列的弹出序列。（注意：这两个序列的长度是相等的）
     + 这道题的关键在于只要在第一个出栈的元素之前压进去的元素的出栈的相对顺序不变就可以了。
 ```cpp
+// 方法1 只要在第一个出栈的元素之前压进去的元素的出栈的相对顺序不变就可以了
 class Solution {
 public:
     bool IsPopOrder(vector<int> pushV,vector<int> popV) {
@@ -517,6 +518,29 @@ public:
                 return false;
             }
         }
+        return true;
+    }
+};
+
+// 方法2 按照pushed和popped的顺序完全再来一遍，正常应该会使得栈为空
+class Solution {
+public:
+    bool validateStackSequences(vector<int>& pushed, vector<int>& popped) {
+        int len = pushed.size(), p = 0, q = 0;
+        stack<int> result;
+        // result.push(pushed[p]);
+        while(true){
+            if(!result.empty() && result.top() == popped[q]){
+                result.pop();
+                q++;
+            }else if(p >= len){
+                return result.empty();
+            }else {
+                result.push(pushed[p]);
+                p++;
+            }
+        }
+
         return true;
     }
 };
