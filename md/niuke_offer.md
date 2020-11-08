@@ -605,27 +605,21 @@ public:
 };
 ```
 + 30.计算连续子向量的最大和,当向量全为正数的时候,问题很好解决。但是,如果向量中包含负数,是否应该包含某个负数,并期望旁边的正数会弥补它呢？例如:{6,-3,-2,7,-15,1,2,2},连续子向量的最大和为8(从第0个开始,到第3个为止)。给一个数组，返回它的最大连续子序列的和。(子向量的长度至少是1)
+    + 一维动态规划
 ```cpp
 class Solution {
 public:
-    int FindGreatestSumOfSubArray(vector<int> array) {
-        int sum = 0, maxSum = 0;
-        int low = 0, high = array.size() -1;
-        for(int i = low; i <= high; i++){
-            sum += array[i];
+    int FindGreatestSumOfSubArray(vector<int> &nums) {
+        int *result = new int[nums.size()];
+        result[0] = nums[0];
+        int max_sum = result[0];
+
+        for(int i=1; i<nums.size(); i++){
+            result[i] = result[i-1]<0 ? nums[i] : nums[i]+result[i-1];
+            max_sum = result[i] > max_sum?result[i]:max_sum;
         }
-        maxSum = sum;
-        while(low != high){
-            if(array[low] < array[high]){
-                sum -= array[low];
-                low++;
-            }else{
-                sum -= array[high];
-                high--;
-            }
-            maxSum = maxSum >= sum ? maxSum : sum;
-        }
-        return maxSum;
+
+        return max_sum;
     }
 };
 ```
@@ -1770,48 +1764,36 @@ struct TreeNode {
 */
 class Solution {
 public:
-    vector<vector<int> > Print(TreeNode* pRoot) {
-        vector<vector<int> > output;
-        if(!pRoot){return output;}
-        
-        queue<TreeNode*> a, b;
-        int count = 1;
-        vector<int> result;
-        result.push_back(pRoot->val);
-        output.push_back(result);
-        result.resize(0);
-        a.push(pRoot);
-        while(!a.empty()){
-            TreeNode* temp = a.front();
-            a.pop();
-            if(temp->left){
-                result.push_back(temp->left->val);
-                b.push(temp->left);
-            }
-            if(temp->right){
-                result.push_back(temp->right->val);
-                b.push(temp->right);
-            }
-            if(a.empty()){
-                if(!b.empty()){
-                    while(!b.empty()){
-                        a.push(b.front());
-                        b.pop();
-                    }
-                    if(count % 2 == 1){
-                        reverse(result.begin(), result.end());
-                        output.push_back(result);
-                    }else{
-                        output.push_back(result);
-                    }
-                    count++;
-                    result.resize(0);
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> result;
+        if(!root){
+            return result;
+        }
+
+        vector<TreeNode*> nodes;
+        nodes.push_back(root);
+        int count = 0;
+        while(nodes.size()){
+            vector<TreeNode*> tmp_new;
+            vector<int> res_tmp;
+            for(int i=0; i<nodes.size(); i++){
+                res_tmp.push_back(nodes[i]->val);
+                if(nodes[i]->left){
+                    tmp_new.push_back(nodes[i]->left);
+                }
+                if(nodes[i]->right){
+                    tmp_new.push_back(nodes[i]->right);
                 }
             }
+            nodes = tmp_new;
+            if(count++ % 2==1){
+                reverse(res_tmp.begin(), res_tmp.end());
+            }
+            result.push_back(res_tmp);
         }
-        return output;
+
+        return result;
     }
-    
 };
 ```
 + 60.从上到下按层打印二叉树，同一层结点从左至右输出。每一层输出一行。
