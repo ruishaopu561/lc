@@ -1885,11 +1885,20 @@ public:
             str++;
             return NULL;
         }
+
+        bool positive = true;
+        if(*str == '-'){
+            positive = false;
+            str++;
+        }
+
         int val = 0;
         while(*str != '!'){
             val = 10 * val + (*str - '0');
             str++;
         }
+        val = positive ? val: -val;
+
         str++;
         TreeNode* node = new TreeNode(val);
         node->left = decode(str);
