@@ -941,7 +941,7 @@ public:
 };
 ```
 48. 写一个函数，求两个整数之和，要求在函数体内不得使用+、-、*、/四则运算符号。
-    + 
+    + 这题需要多看##
 ```cpp
 /*
 首先看十进制是如何做的： 5+7=12，三步走
@@ -959,7 +959,7 @@ class Solution {
 public:
     int Add(int num1, int num2)
     {
-         return num2 ? Add(num1^num2, (num1&num2)<<1) : num1;
+        return num2 ? Add(num1^num2, (num1&num2)<<1) : num1;
     }
 };
 ```
@@ -1402,6 +1402,42 @@ public:
     }
 };
 ```
+69. 把n个骰子扔在地上，所有骰子朝上一面的点数之和为s。输入n，打印出s的所有可能的值出现的概率。
+    你需要用一个浮点数数组返回答案，其中第 i 个元素代表这 n 个骰子所能掷出的点数集合中第 i 小的那个的概率。
+```
+输入: 1
+输出: [0.16667,0.16667,0.16667,0.16667,0.16667,0.16667]
+示例 2:
+
+输入: 2
+输出: [0.02778,0.05556,0.08333,0.11111,0.13889,0.16667,0.13889,0.11111,0.08333,0.05556,0.02778]
+```
+```cpp
+// 递归就完事儿了
+class Solution {
+public:
+    vector<double> dicesProbability(int n) {
+        if(n==1){
+            vector<double> result = {1.0/6,1.0/6,1.0/6,1.0/6,1.0/6,1.0/6};
+            return result;
+        }
+
+        vector<double> result, sub_result = dicesProbability(n-1);
+        for(int i=0; i<sub_result.size()+5; i++){
+            result.push_back(0);
+        }
+        for(int i=0; i<6; i++)
+        {
+            for(int j=0; j<sub_result.size(); j++){
+                result[i+j] += sub_result[j]/6;
+            }            
+        }
+
+        return result;
+    }
+};
+```
+
 ## Tree
 17. 输入两棵二叉树A，B，判断B是不是A的子结构。（ps：我们约定空树不是任意一个树的子结构）
 ```cpp
