@@ -666,6 +666,27 @@ public:
         return temp1 < temp2;
     }
 };
+// solution 2, 就是按照规则排序就好了，这个写法高级点2333
+class Solution
+{
+public:
+    string minNumber(vector<int> &nums)
+    {
+        vector<string> result;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            result.push_back(to_string(nums[i]));
+        }
+        sort(result.begin(), result.end(), [](string &s1, string &s2) { return s1 + s2 < s2 + s1; });
+
+        string ans = "";
+        for (int i = 0; i < result.size(); i++)
+        {
+            ans += result[i];
+        }
+        return ans;
+    }
+};
 ```
 33. 把只包含质因子2、3和5的数称作丑数（Ugly Number）。例如6、8都是丑数，但14不是，因为它包含质因子7。 习惯上我们把1当做是第一个丑数。求按从小到大的顺序的第N个丑数。
     + 这题有意思，丑数的是个难点，该方法用的是三个指针指向不同的位置选择的，需牢记。
@@ -767,6 +788,7 @@ public:
     + 套路还是map的套路，不过有个方法记一下；
     + 首先：位运算中异或的性质：两个相同数字异或=0，一个数和0异或还是它本身。
     + 当只有一个数出现一次时，我们把数组中所有的数，依次异或运算，最后剩下的就是落单的数，因为成对儿出现的都抵消了。
+    + [Solution 2参考网址](https://leetcode-cn.com/problems/shu-zu-zhong-shu-zi-chu-xian-de-ci-shu-lcof/solution/shu-zu-zhong-shu-zi-chu-xian-de-ci-shu-by-leetcode/)
 ```cpp
 class Solution {
 public:
@@ -794,6 +816,41 @@ public:
             }
             iter++;
         }
+    }
+};
+
+// solution 2 使用异或将数组分为两组计算得到结果
+class Solution
+{
+public:
+    vector<int> singleNumbers(vector<int> &nums)
+    {
+        int xor_sum = 0;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            xor_sum ^= nums[i];
+        }
+
+        int val = 1;
+        while ((xor_sum & val) == 0)
+        {
+            val *= 2;
+        }
+
+        int a = 0, b = 0;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            if ((nums[i] & val) == 0)
+            {
+                a ^= nums[i];
+            }
+            else
+            {
+                b ^= nums[i];
+            }
+        }
+
+        return vector<int>{a, b};
     }
 };
 ```
@@ -913,13 +970,22 @@ public:
 ```
 46. 每年六一儿童节,牛客都会准备一些小礼物去看望孤儿院的小朋友,今年亦是如此。HF作为牛客的资深元老,自然也准备了一些小游戏。其中,有个游戏是这样的:首先,让小朋友们围成一个大圈。然后,他随机指定一个数m,让编号为0的小朋友开始报数。每次喊到m-1的那个小朋友要出列唱首歌,然后可以在礼品箱中任意的挑选礼物,并且不再回到圈中,从他的下一个小朋友开始,继续0...m-1报数....这样下去....直到剩下最后一个小朋友,可以不用表演,并且拿到牛客名贵的“名侦探柯南”典藏版(名额有限哦!!^_^)。请你试着想下,哪个小朋友会得到这份礼品呢？(注：小朋友的编号是从0到n-1)
     + 如果没有小朋友，请返回-1
+```
+我们将上述问题建模为函数 f(n, m)，该函数的返回值为最终留下的元素的序号。
+
+首先，长度为 n 的序列会先删除第 m % n 个元素，然后剩下一个长度为 n-1 的序列。那么，我们可以递归地求解 f(n-1, m)，就可以知道对于剩下的 n-1 个
+元素，最终会留下第几个元素，我们设答案为 x = f(n-1, m)。
+
+由于我们删除了第 m % n 个元素，将序列的长度变为 n-1。当我们知道了 f(n-1, m) 对应的答案 x 之后，我们也就可以知道，长度为 n 的序列最后一个删除的
+元素，应当是从 m % n 开始数的第 x 个元素。因此有 f(n, m) = (m % n + x) % n = (m + x) % n。
+```
 ```cpp
 class Solution {
 public:
     int LastRemaining_Solution(int n, int m)
     {
         if(n==0){return -1;}
-     
+
         int current = 0;
         for(int i=2; i<n+1; i++){
             current = (current + m) % i;
@@ -1356,23 +1422,47 @@ public:
 ```cpp
 class Solution {
 public:
-    int cutRope(int number) {
-        if(number < 4){
-            return number-1;
-        }
-        vector<int> result;
-        result.push_back(0);
-        result.push_back(1);
-        result.push_back(2);
-        result.push_back(3);
-        for(int i=4; i<=number; i++){
-            int max = 0;
-            for(int j=1; j<=i/2; j++){
-                max = max >= (result[j] * result[i-j])? max: result[j] * result[i-j];
+    int cuttingRope(int n) {
+        int *a = new int[n+1];
+        int index = 0;
+        a[index++]=0;
+        a[index++] = 1;
+        
+        for(; index<=n; index++){
+            int tmp = 0;
+            for(int i=1; i<=index/2; i++){
+                tmp = (a[i] * a[index-i]) < tmp ? tmp: (a[i] * a[index-i]);
             }
-            result[i] = max;
+            if(index < n){
+                tmp = index < tmp ? tmp : index;
+            }
+            a[index] = tmp;
         }
-        return result[number];
+        return a[n];
+    }
+};
+
+// Solution 2，这是根据规律计算的结果，最多的3是最好的，剩下的如果余2就乘2，如果余1就除3乘4，因为 2*2 > 1*3
+class Solution {
+public:
+    int cuttingRope(int n) {
+        return n <= 3? n - 1 : pow(3, n / 3) * 4 / (4 - n % 3);
+    }
+};
+
+// Solution 3，Solution 2针对大数取余的修改版
+class Solution {
+public:
+    int cuttingRope(int n) {
+        if(n < 4){
+            return n-1;
+        }
+        unsigned int value = 1;
+        while(n>4){
+            value = value*3 % 1000000007;
+            n-=3;
+        }
+        return value * n % 1000000007;
     }
 };
 ```
@@ -1437,6 +1527,37 @@ public:
     }
 };
 ```
+70. 假设把某股票的价格按照时间先后顺序存储在数组中，请问买卖该股票一次可能获得的最大利润是多少？
+```
+输入: [7,1,5,3,6,4]
+输出: 5
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格。
+
+输入: [7,6,4,3,1]
+输出: 0
+解释: 在这种情况下, 没有交易完成, 所以最大利润为 0。
+```
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int cur=0, p=1, max_val = 0, len = prices.size();
+        while(p < len)
+        {
+            if(prices[p] > prices[cur])
+            {
+                max_val = max_val < (prices[p] - prices[cur]) ? prices[p] - prices[cur] : max_val; 
+            }else
+            {
+                cur = p;
+            }
+            p++;
+        }
+        return max_val;
+    }
+};
+``` 
 
 ## Tree
 17. 输入两棵二叉树A，B，判断B是不是A的子结构。（ps：我们约定空树不是任意一个树的子结构）
@@ -1716,6 +1837,7 @@ public:
 39. 输入一棵二叉树，判断该二叉树是否是平衡二叉树。
     + 即高度差是否大于1
 ```cpp
+// solution 1, from niuke
 class Solution {
 public:
     bool IsBalanced_Solution(TreeNode* pRoot) {
@@ -1732,6 +1854,25 @@ public:
         }else{
             return 1 + (left > right ? left : right);
         }
+    }
+};
+// solution 2, from leetcode, defeat 99.91%
+class Solution {
+public:
+    bool balance = true;
+    bool isBalanced(TreeNode* root) {
+        depth(root);
+        return balance;
+    }
+
+    int depth(TreeNode *root){
+        if(!root){return 0;}
+        int left = depth(root->left);
+        int right = depth(root->right);
+        
+        balance = (left - right > 1 || left - right < -1) ? false : balance;
+
+        return 1+ (left < right?right:left);
     }
 };
 ```
