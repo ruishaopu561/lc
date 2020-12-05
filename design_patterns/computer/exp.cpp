@@ -171,6 +171,47 @@ Expression *CompoundExp::getRHS()
 
 // -----------------------------------------------------------
 
+FactExp::FactExp(std::string _op, Expression *_lhs)
+{
+    op = _op;
+    lhs = _lhs;
+}
+
+FactExp::~FactExp() {}
+
+int FactExp::eval(EvaluationContext *context)
+{
+    int left = lhs->eval(context);
+    int value = 1;
+    while (left > 1)
+    {
+        value *= left--;
+    }
+    return value;
+}
+
+std::string FactExp::toString()
+{
+    return lhs->toString() + op;
+}
+
+ExpressionType FactExp::getType()
+{
+    return FACT;
+}
+
+std::string FactExp::getOperator()
+{
+    return op;
+}
+
+Expression *FactExp::getLHS()
+{
+    return lhs;
+}
+
+// -----------------------------------------------------------
+
 EvaluationContext::EvaluationContext() {}
 
 EvaluationContext::~EvaluationContext() {}

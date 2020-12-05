@@ -12,7 +12,8 @@ enum ExpressionType
 {
     CONSTANT,
     IDENTIFIER,
-    COMPOUND
+    COMPOUND,
+    FACT,
 };
 
 class Expression
@@ -76,6 +77,21 @@ public:
 private:
     std::string op;
     Expression *lhs, *rhs;
+};
+
+class FactExp:public Expression
+{
+public:
+    FactExp(std::string _op, Expression *_lhs);
+    ~FactExp();
+    virtual int eval(EvaluationContext *context);
+    virtual std::string toString();
+    virtual ExpressionType getType();
+    virtual std::string getOperator();
+    virtual Expression *getLHS();
+private:
+    Expression* lhs;
+    std::string op;
 };
 
 class EvaluationContext

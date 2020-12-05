@@ -8,7 +8,8 @@ enum TokenType
     WORD,
     NUMBER,
     BRACKET,
-    ENDOF
+    ENDOF,
+    OPFACT,
 };
 
 class TokenScanner

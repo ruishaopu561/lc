@@ -25,6 +25,10 @@ TokenType TokenScanner::getTokenType(std::string str)
     {
         return BRACKET;
     }
+    else if (str[0] == '!')
+    {
+        return OPFACT;
+    }
     else
     {
         return WORD;
