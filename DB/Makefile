@@ -1,13 +1,13 @@
 t: Node.o BPTree.o main.o
 	g++ -o t Node.o BPTree.o main.o
 
-Node.o: Node.cpp Node.h
+Node.o: Node.cpp Node.h List.h
 	g++ -c Node.cpp
 
-BPTree.o: BPTree.cpp BPTree.h
+BPTree.o: BPTree.cpp BPTree.h Node.h List.h
 	g++ -c BPTree.cpp
 
-main.o: main.cpp Node.h BPTree.h
+main.o: main.cpp BPTree.h Node.h List.h
 	g++ -c main.cpp
 
 clean:

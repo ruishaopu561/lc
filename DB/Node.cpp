@@ -9,12 +9,7 @@ Node::Node()
     isLeaf = false;
     prev = NULL;
     next = NULL;
-
-    keyNum = 0;
-    for (int i = 0; i < MAXCHILDRENNUM; i++)
-    {
-        keys[i] == KEYNULL;
-    }
+    keys = new List<KeyType>(MAXCHILDRENNUM);
 }
 
 Node::~Node()
@@ -43,70 +38,25 @@ void Node::setIsLeaf(bool leaf)
     isLeaf = leaf;
 }
 
-int Node::getKeyNum()
-{
-    return keyNum;
-}
-
-// 返回插入的索引
 int Node::getKeyIndex(KeyType key)
 {
-    for (int i = 0; i < keyNum; i++)
+    int index = 0, i = 0, size = keys->getSize();
+    for (; i < size; i++)
     {
-        if (key < keys[i])
+        KeyType k = keys->getValue(i);
+        if (key < k)
         {
-            return i;
+            index = (i - 1 < 0) ? 0 : i - 1;
+            break;
+        }
+        else if (key == k)
+        {
+            index = i;
+            break;
         }
     }
-
-    return keyNum;
-}
-
-void Node::insertKey(int index, KeyType key)
-{
-    if (index >= keyNum)
-    {
-        keys[keyNum++] = key;
-    }
-    else
-    {
-        int j = keyNum;
-        while (j > index)
-        {
-            keys[j] = keys[j - 1];
-            j--;
-        }
-        keys[index] = key;
-    }
-}
-
-void Node::deleteKey(int index)
-{
-    if (index < 0 || index >= keyNum)
-    {
-        return;
-    }
-    int i = index;
-    for (; i + 1 < keyNum; i++)
-    {
-        keys[i] = keys[i + 1];
-    }
-    if (i + 1 == keyNum)
-    {
-        keys[i] = KEYNULL;
-    }
-    keyNum--;
-}
-
-void Node::setKey(int index, KeyType key)
-{
-    keys[index] = key;
-}
-
-KeyType Node::getKey(int index)
-{
-    if(index < 0 || index>=keyNum){return KEYNULL;}
-    return keys[index];
+    index = (i == size) ? i - 1 : index;
+    return index;
 }
 
 /*
@@ -115,143 +65,145 @@ KeyType Node::getKey(int index)
 InternalNode::InternalNode()
 {
     setIsLeaf(false);
-
-    nodeNum = 0;
-    for (int i = 0; i < MAXCHILDRENNUM; i++)
-    {
-        children[i] = NULL;
-    }
+    nodes = new List<Node *>(MAXCHILDRENNUM);
 }
 
 InternalNode::~InternalNode()
 {
-    int index = (nodeNum < MAXCHILDRENNUM) ? nodeNum : MAXCHILDRENNUM;
+    int index = nodes->getSize();
     for (int i = 0; i < index; i++)
     {
-        delete children[i];
-        children[i] = NULL;
+        nodes->setValue(i, NULL);
     }
+    delete nodes;
 }
 
-void InternalNode::insertNode(int index, Node *child)
+void InternalNode::addNode(int index, KeyType key, Node *child)
 {
-    if (index >= nodeNum)
-    {
-        children[index] = child;
-    }
-    else
-    {
-        int i = nodeNum;
-        while (i > index)
-        {
-            children[i] = children[i - 1];
-            i--;
-        }
-        children[index] = child;
-    }
-    nodeNum++;
+    keys->insertValue(index, key);
+    nodes->insertValue(index, child);
 }
 
 void InternalNode::deleteNode(int index)
 {
-    if (index < 0 || index >= nodeNum)
-    {
-        return;
-    }
-    int i = index;
-    for (; i + 1 < nodeNum; i++)
-    {
-        children[i] = children[i + 1];
-    }
-    if (i + 1 == nodeNum)
-    {
-        children[i] = NULL;
-    }
-    nodeNum--;
-}
-
-void InternalNode::setNode(int index, Node *node)
-{
-    if(index<0 || index>=nodeNum){return;}
-    children[index] = node;
-}
-
-Node *InternalNode::getNode(int index)
-{
-    if(index<0 || index>=nodeNum){return NULL;}
-    return children[index];
+    keys->deleteValue(index);
+    nodes->deleteValue(index);
 }
 
 Node *InternalNode::insert(KeyType key, DataType value)
 {
     Node *child = NULL;
-    int index = getKeyIndex(key);
-    index = (index < nodeNum) ? index : nodeNum - 1;
+    int index = getKeyIndex(key), size = nodes->getSize();
+    index = (index < size) ? index : size - 1;
 
-    child = children[index]->insert(key, value);
+    child = (nodes->getValue(index))->insert(key, value);
+    // 插入之后 key 有可能变化，修改一下
+    keys->setValue(index, (nodes->getValue(index))->keys->getValue(0));
+
     if (child == NULL)
     {
         return NULL;
     }
+
+    keys->setValue(index, nodes->getValue(index)->keys->getValue(0));
+    if (size < MAXCHILDRENNUM)
+    {
+        addNode(index + 1, child->keys->getValue(0), child);
+        return NULL;
+    }
+
+    // 分裂
+    InternalNode *sibling = (InternalNode *)split();
+    // 插值
+    if (index + 1 < DEGREE)
+    {
+        addNode(index + 1, child->keys->getValue(0), child);
+    }
     else
     {
-        setKey(index, children[index]->keys[0]);
-        if (nodeNum < MAXCHILDRENNUM)
-        {
-            insertKey(index + 1, child->keys[0]);
-            insertNode(index + 1, child);
-            return NULL;
-        }
+        sibling->addNode(index + 1 - DEGREE, child->keys->getValue(0), child);
+    }
+    return sibling;
+}
 
-        // 分裂
-        InternalNode *sibling = (InternalNode *)split();
-        // 插值
-        if (index + 1 < DEGREE)
+Node *InternalNode::remove(KeyType key)
+{
+    int index = getKeyIndex(key);
+    Node *sibling = (nodes->getValue(index))->remove(key);
+
+    if (!sibling)
+    {
+        keys->setValue(index, (nodes->getValue(index)->keys->getValue(0)));
+        return NULL;
+    }
+
+    // 合并了左节点
+    if (index > 0 && sibling->keys->getValue(0) == nodes->getValue(index - 1)->keys->getValue(0))
+    {
+        deleteNode(index);
+    }
+    else
+    {
+        keys->setValue(index, (nodes->getValue(index)->keys->getValue(0)));
+        deleteNode(index + 1);
+    }
+
+    // 检查合并
+    if (nodes->getSize() >= DEGREE)
+    {
+        return NULL;
+    }
+    // to be root
+    if(!prev && !next)
+    {
+        // cout << sibling->keys->getSize() << endl;
+        sibling->iterate();
+        return sibling;
+    }
+
+    InternalNode *p = (InternalNode *)prev, *n = (InternalNode *)next;
+    if (p)
+    {
+        int size = p->keys->getSize();
+        if (size > DEGREE)
         {
-            insertKey(index + 1, child->keys[0]);
-            insertNode(index + 1, child);
+            addNode(0, p->keys->getValue(size - 1), p->nodes->getValue(size - 1));
+            p->deleteNode(size - 1);
+            return NULL;
         }
         else
         {
-            sibling->insertKey(index + 1 - DEGREE, child->keys[0]);
-            sibling->insertNode(index + 1 - DEGREE, child);
+            return merge(p, this);
         }
-        return sibling;
     }
-}
-
-void InternalNode::remove(KeyType)
-{
-
+    else
+    {
+        if (n->keys->getSize() > DEGREE)
+        {
+            addNode(nodes->getSize(), n->keys->getValue(0), n->nodes->getValue(0));
+            n->deleteNode(0);
+            return NULL;
+        }
+        else
+        {
+            return merge(this, n);
+        }
+    }
 }
 
 void InternalNode::set(KeyType key, DataType value)
 {
-    // 这块找 index 能复用吗？
-    int index = 0, i=0;
-    for (; i < nodeNum; i++)
-    {
-        if (key < getKey(i))
-        {
-            index = (i-1<0)?0:i-1;
-            break;
-        }else if(key == getKey(i))
-        {
-            index = i;
-            break;
-        }
-    }
-    index = (i==nodeNum)? i-1:index;
-
-    children[index]->set(key, value);
+    int index = getKeyIndex(key);
+    (nodes->getValue(index))->set(key, value);
 }
 
 void InternalNode::iterate()
 {
-    for (int i=0; i<nodeNum; i++)
+    int size = nodes->getSize();
+    for (int i = 0; i < size; i++)
     {
-        cout << keys[i] << ": ";
-        children[i]->iterate();
+        cout << keys->getValue(i) << ": ";
+        nodes->getValue(i)->iterate();
     }
     cout << endl;
 }
@@ -262,9 +214,7 @@ Node *InternalNode::split()
     InternalNode *sibling = new InternalNode();
     for (int i = start; i < MAXCHILDRENNUM; i++)
     {
-        sibling->insertKey(i - start, keys[start]);
-        sibling->insertNode(i - start, children[start]);
-        deleteKey(start);
+        sibling->addNode(i - start, keys->getValue(start), nodes->getValue(start));
         deleteNode(start);
     }
 
@@ -280,6 +230,27 @@ Node *InternalNode::split()
     return sibling;
 }
 
+Node *InternalNode::merge(Node *l, Node *r)
+{
+    InternalNode *left = (InternalNode *)l, *right = (InternalNode *)r;
+    int lsize = left->keys->getSize(), rsize = right->keys->getSize();
+    for (int i = 0; i < rsize; i++)
+    {
+        left->addNode(lsize + i, right->keys->getValue(0), right->nodes->getValue(0));
+        right->deleteNode(0);
+    }
+
+    // 双链表删除节点
+    left->next = right->next;
+    if (right->next)
+    {
+        right->next->prev = left;
+    }
+    delete right;
+    right = NULL;
+
+    return left;
+}
 
 /*
  * Leaf Node
@@ -287,74 +258,30 @@ Node *InternalNode::split()
 LeafNode::LeafNode()
 {
     setIsLeaf(true);
-
-    valueNum = 0;
-    for (int i = 0; i < MAXCHILDRENNUM; i++)
-    {
-        values[i] = DATANULL;
-    }
+    values = new List<DataType>(MAXCHILDRENNUM);
 }
 
 LeafNode::~LeafNode() {}
 
-void LeafNode::insertValue(int index, DataType value)
+void LeafNode::addValue(int index, KeyType key, DataType value)
 {
-    if (index >= valueNum)
-    {
-        values[index] = value;
-    }
-    else
-    {
-        int i = valueNum;
-        while (i > index)
-        {
-            values[i] = values[i - 1];
-            i--;
-        }
-        values[index] = value;
-    }
-    valueNum++;
+    keys->insertValue(index, key);
+    values->insertValue(index, value);
 }
 
 void LeafNode::deleteValue(int index)
 {
-    if (index < 0 || index >= valueNum)
-    {
-        return;
-    }
-    int i = index;
-    for (; i + 1 < valueNum; i++)
-    {
-        values[i] = values[i + 1];
-    }
-
-    if (i + 1 == valueNum)
-    {
-        values[i] = DATANULL;
-    }
-    valueNum--;
-}
-
-void LeafNode::setValue(int index, DataType value)
-{
-    if(index<0 || index>=valueNum){return;}
-    values[index] = value;
-}
-
-DataType LeafNode::getValue(int index)
-{
-    if(index<0 || index>=valueNum){return DATANULL;}
-    return values[index];
+    keys->deleteValue(index);
+    values->deleteValue(index);
 }
 
 Node *LeafNode::insert(KeyType key, DataType value)
 {
-    int index = getKeyIndex(key);
+    int index = keys->getValueIndex(key);
 
-    if (valueNum < MAXCHILDRENNUM)
+    if (values->getSize() < MAXCHILDRENNUM)
     {
-        insertKey(index, key);
-        insertValue(index, value);
+        addValue(index, key, value);
         return NULL;
     }
 
@@ -372,18 +299,62 @@ Node *LeafNode::insert(KeyType key, DataType value)
     return sibling;
 }
 
-void LeafNode::remove(KeyType key)
+Node *LeafNode::remove(KeyType key)
 {
+    int size = values->getSize();
+    for (int i = 0; i < size; i++)
+    {
+        if (keys->getValue(i) == key)
+        {
+            deleteValue(i);
+            // 检查合并
+            if (values->getSize() >= DEGREE || (!prev && !next))
+            {
+                return NULL;
+            }
 
+            LeafNode *p = (LeafNode *)prev, *n = (LeafNode *)next;
+            if (p)
+            {
+                int size = p->keys->getSize();
+                if (size > DEGREE)
+                {
+                    addValue(0, p->keys->getValue(size - 1), p->values->getValue(size - 1));
+                    p->deleteValue(size - 1);
+                    return NULL;
+                }
+                else
+                {
+                    return merge(p, this);
+                }
+            }
+            else
+            {
+                int size = n->keys->getSize();
+                if (size > DEGREE)
+                {
+                    addValue(values->getSize(), n->keys->getValue(0), n->values->getValue(0));
+                    n->deleteValue(0);
+                    return NULL;
+                }
+                else
+                {
+                    return merge(this, n);
+                }
+            }
+        }
+    }
+    return NULL;
 }
 
 void LeafNode::set(KeyType key, DataType value)
 {
-    for(int i=0; i<valueNum; i++)
+    int size = values->getSize();
+    for (int i = 0; i < size; i++)
     {
-        cout << getKey(i) << " " << key << endl;
-        if(getKey(i) == key){
-            values[i] = value;
+        if (keys->getValue(i) == key)
+        {
+            values->setValue(i, value);
             return;
         }
     }
@@ -391,9 +362,10 @@ void LeafNode::set(KeyType key, DataType value)
 
 void LeafNode::iterate()
 {
-    for (int i = 0; i < valueNum; i++)
+    int size = values->getSize();
+    for (int i = 0; i < size; i++)
     {
-        cout << keys[i] << ":" << values[i] << "; ";
+        cout << keys->getValue(i) << ":" << values->getValue(i) << "; ";
     }
     cout << endl;
 }
@@ -404,9 +376,7 @@ Node *LeafNode::split()
     LeafNode *sibling = new LeafNode();
     for (int i = start; i < MAXCHILDRENNUM; i++)
     {
-        sibling->insertKey(i - start, keys[start]);
-        sibling->insertValue(i - start, values[start]);
-        deleteKey(start);
+        sibling->addValue(i - start, keys->getValue(start), values->getValue(start));
         deleteValue(start);
     }
 
@@ -420,4 +390,26 @@ Node *LeafNode::split()
     sibling->prev = this;
 
     return sibling;
+}
+
+Node *LeafNode::merge(Node *l, Node *r)
+{
+    LeafNode *left = (LeafNode *)l, *right = (LeafNode *)r;
+    int lsize = left->keys->getSize(), rsize = right->keys->getSize();
+    for (int i = 0; i < rsize; i++)
+    {
+        left->addValue(lsize + i, right->keys->getValue(0), right->values->getValue(0));
+        right->deleteValue(0);
+    }
+
+    // 双链表删除节点
+    left->next = right->next;
+    if (right->next)
+    {
+        right->next->prev = left;
+    }
+    delete right;
+    right = NULL;
+
+    return left;
 }

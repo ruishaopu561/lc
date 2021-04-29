@@ -1,6 +1,7 @@
 #ifndef BPTREE_H
 #define BPTREE_H
 
+#include "List.h"
 #include "Node.h"
 
 class BPTree

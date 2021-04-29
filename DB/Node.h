@@ -4,10 +4,12 @@
 #include <iostream>
 #include <string>
 
+#include "List.h"
+
 using namespace std;
 
 #define DEGREE 2
-#define MINCHILDRENNUM DEGREE
+#define MINnodesNUM DEGREE
 #define MAXCHILDRENNUM DEGREE * 2
 
 #define KEYNULL 0
@@ -21,7 +23,7 @@ class Node
 public:
     Node *prev;
     Node *next;
-    KeyType keys[MAXCHILDRENNUM];
+    List<KeyType> *keys;
 
     Node();
     ~Node();
@@ -30,26 +32,22 @@ public:
     void setIsRoot(bool);
     bool getIsLeaf();
     void setIsLeaf(bool);
-    int getKeyNum();
-    int getKeyIndex(KeyType);
 
-    void insertKey(int, KeyType);
-    void deleteKey(int);
-    void setKey(int, KeyType);
-    KeyType getKey(int);
+    // 定位 key 在当前 node 中的 keys 里的位置
+    int getKeyIndex(KeyType);
 
     // 如有分裂，返回新节点
     virtual Node *insert(KeyType, DataType) = 0;
-    virtual void remove(KeyType) = 0;
+    virtual Node *remove(KeyType) = 0;
     virtual void set(KeyType, DataType) = 0;
     virtual void iterate() = 0;
 
 private:
     bool isRoot;
     bool isLeaf;
-    int keyNum;
 
     virtual Node *split() = 0;
+    virtual Node *merge(Node *, Node *) = 0;
 };
 
 class InternalNode : public Node
@@ -58,21 +56,19 @@ public:
     InternalNode();
     ~InternalNode();
 
-    void insertNode(int, Node *);
+    void addNode(int, KeyType, Node *);
     void deleteNode(int);
-    void setNode(int, Node *);
-    Node *getNode(int);
 
     virtual Node *insert(KeyType, DataType);
-    virtual void remove(KeyType);
+    virtual Node *remove(KeyType);
     virtual void set(KeyType, DataType);
     virtual void iterate();
 
 private:
-    int nodeNum;
-    Node *children[MAXCHILDRENNUM];
+    List<Node *> *nodes;
 
     virtual Node *split();
+    virtual Node *merge(Node *, Node *);
 };
 
 class LeafNode : public Node
@@ -81,21 +77,19 @@ public:
     LeafNode();
     ~LeafNode();
 
-    void insertValue(int, DataType);
+    void addValue(int, KeyType, DataType);
     void deleteValue(int);
-    void setValue(int, DataType);
-    DataType getValue(int);
 
     virtual Node *insert(KeyType, DataType);
-    virtual void remove(KeyType);
+    virtual Node *remove(KeyType);
     virtual void set(KeyType, DataType);
     virtual void iterate();
 
 private:
-    int valueNum;
-    DataType values[MAXCHILDRENNUM];
+    List<DataType> *values;
 
     virtual Node *split();
+    virtual Node *merge(Node *, Node *);
 };
 
 #endif /* NODE_H */

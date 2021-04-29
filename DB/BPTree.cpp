@@ -21,22 +21,22 @@ bool BPTree::insert(KeyType key, DataType value)
         head = (void *)root;
     }
     Node *child = root->insert(key, value);
-    if(child){
+    if (child)
+    {
         root->setIsRoot(false);
-        InternalNode*newRoot = new InternalNode();
+        InternalNode *newRoot = new InternalNode();
         newRoot->setIsRoot(true);
 
-        int key1 = root->keys[0], key2 = child->keys[0];
-        if(key1 < key2){
-            newRoot->insertKey(0, key1);
-            newRoot->insertNode(0, root);
-            newRoot->insertKey(1, key2);
-            newRoot->insertNode(1,child);
-        }else{
-            newRoot->insertKey(0, key1);
-            newRoot->insertNode(0, root);
-            newRoot->insertKey(1, key2);
-            newRoot->insertNode(1,child);
+        int key1 = root->keys->getValue(0), key2 = child->keys->getValue(0);
+        if (key1 < key2)
+        {
+            newRoot->addNode(0, key1, root);
+            newRoot->addNode(1, key2, child);
+        }
+        else
+        {
+            newRoot->addNode(0, key2, child);
+            newRoot->addNode(1, key1, root);
         }
 
         root = newRoot;
@@ -47,12 +47,20 @@ bool BPTree::insert(KeyType key, DataType value)
 
 bool BPTree::remove(KeyType key)
 {
+    if (!root)
+    {
+        return false;
+    }
+
+    Node *child = root->remove(key);
+    root = child ? child : root;
     return true;
 }
 
 bool BPTree::set(KeyType key, DataType value)
 {
-    if(!root){
+    if (!root)
+    {
         return false;
     }
 

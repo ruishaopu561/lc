@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "List.h"
 #include "Node.h"
 #include "BPTree.h"
 
@@ -10,20 +11,38 @@ int main()
     BPTree *bp = new BPTree();
     cout << "new succeed!" << endl;
 
-    for (int i = 1; i < 16; i++)
+    for (int i = 4; i < 16; i++)
     {
         bp->insert(i, "aa");
         bp->iterate();
         bp->printTree();
         cout << endl;
     }
-    cout << "insert 1 succeed!" << endl;
+    cout << "insert succeed!" << endl;
     cout << "iterate succeed!" << endl;
     cout << "print tree succeed!" << endl;
+
+    bp->insert(1, "aa");
+    bp->iterate();
+    bp->printTree();
 
     bp->set(5, "ae");
     bp->set(7, "ag");
     bp->set(3, "ac");
+    bp->set(1, "aA");
+    bp->set(15, "ao");
+    // bp->iterate();
+    bp->printTree();
+    cout << "set new value succeed!\n" << endl;
+
+    bp->remove(6);
+    bp->remove(10);
     bp->iterate();
-    cout << "set new value succeed!" << endl;
+    bp->printTree();
+    cout << "remove 1eaf node succeed!\n" << endl;
+
+    bp->remove(5);
+    bp->iterate();
+    bp->printTree();
+    cout << "remove internal node succeed!\n" << endl;
 }
