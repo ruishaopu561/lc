@@ -22,7 +22,6 @@ private:
     T *values;
 };
 
-
 template <typename T>
 List<T>::List(int cap)
 {

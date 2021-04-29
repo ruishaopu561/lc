@@ -154,7 +154,7 @@ Node *InternalNode::remove(KeyType key)
         return NULL;
     }
     // to be root
-    if(!prev && !next)
+    if (!prev && !next)
     {
         // cout << sibling->keys->getSize() << endl;
         sibling->iterate();

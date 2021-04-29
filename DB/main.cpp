@@ -33,16 +33,16 @@ int main()
     bp->set(15, "ao");
     // bp->iterate();
     bp->printTree();
-    cout << "set new value succeed!\n" << endl;
+    cout << "set new value succeed!" << endl;
 
     bp->remove(6);
     bp->remove(10);
     bp->iterate();
     bp->printTree();
-    cout << "remove 1eaf node succeed!\n" << endl;
+    cout << "remove 1eaf node succeed!" << endl;
 
     bp->remove(5);
     bp->iterate();
     bp->printTree();
-    cout << "remove internal node succeed!\n" << endl;
+    cout << "remove internal node succeed!" << endl;
 }
