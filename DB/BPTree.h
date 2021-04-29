@@ -9,8 +9,15 @@ public:
     BPTree();
     ~BPTree();
 
+    bool insert(KeyType, DataType);
+    bool remove(KeyType);
+    bool set(KeyType, DataType);
+    void iterate();
+    void printTree();
+
 private:
     Node *root;
+    void *head;
 };
 
 #endif /* BPTREE_H */
