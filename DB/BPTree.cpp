@@ -40,6 +40,7 @@ bool BPTree::insert(KeyType key, DataType value)
         }
 
         root = newRoot;
+        head = (void *)root->getHead();
     }
 
     return true;
@@ -53,7 +54,12 @@ bool BPTree::remove(KeyType key)
     }
 
     Node *child = root->remove(key);
-    root = child ? child : root;
+    if(child)
+    {
+        root = child;
+        root->setIsRoot(true);
+        head = (void *)root->getHead();
+    }
     return true;
 }
 

@@ -41,6 +41,7 @@ public:
     virtual Node *remove(KeyType) = 0;
     virtual void set(KeyType, DataType) = 0;
     virtual void iterate() = 0;
+    virtual Node *getHead() = 0;
 
 private:
     bool isRoot;
@@ -63,6 +64,7 @@ public:
     virtual Node *remove(KeyType);
     virtual void set(KeyType, DataType);
     virtual void iterate();
+    virtual Node *getHead();
 
 private:
     List<Node *> *nodes;
@@ -84,6 +86,7 @@ public:
     virtual Node *remove(KeyType);
     virtual void set(KeyType, DataType);
     virtual void iterate();
+    virtual Node *getHead();
 
 private:
     List<DataType> *values;

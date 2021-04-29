@@ -208,6 +208,12 @@ void InternalNode::iterate()
     cout << endl;
 }
 
+Node *InternalNode::getHead()
+{
+    Node *child = nodes->getValue(0);
+    return child->getIsLeaf() ? child : child->getHead();
+}
+
 Node *InternalNode::split()
 {
     int start = DEGREE;
@@ -368,6 +374,11 @@ void LeafNode::iterate()
         cout << keys->getValue(i) << ":" << values->getValue(i) << "; ";
     }
     cout << endl;
+}
+
+Node *LeafNode::getHead()
+{
+    return this;
 }
 
 Node *LeafNode::split()

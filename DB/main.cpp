@@ -6,7 +6,7 @@
 
 using namespace std;
 
-int main()
+void test1()
 {
     BPTree *bp = new BPTree();
     cout << "new succeed!" << endl;
@@ -45,4 +45,24 @@ int main()
     bp->iterate();
     bp->printTree();
     cout << "remove internal node succeed!" << endl;
+
+    bp->remove(1);
+    bp->iterate();
+    bp->printTree();
+    cout << "remove internal node succeed!" << endl;
+}
+
+void test2()
+{
+    // create database **;
+    // use database **;
+    // create table **(int key, string value);
+    // select * from **;
+    // insert into ** value(key1, value1);
+}
+
+int main()
+{
+    test1();
+    test2();
 }
