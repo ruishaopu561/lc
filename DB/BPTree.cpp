@@ -74,6 +74,14 @@ bool BPTree::set(KeyType key, DataType value)
     return true;
 }
 
+bool BPTree::get(KeyType key, DataType &return_val)
+{
+    if(!root){
+        return false;
+    }
+    return root->get(key, return_val);
+}
+
 void BPTree::iterate()
 {
     if (!head)

@@ -197,6 +197,12 @@ void InternalNode::set(KeyType key, DataType value)
     (nodes->getValue(index))->set(key, value);
 }
 
+bool InternalNode::get(KeyType key, DataType &return_val)
+{
+    int index = getKeyIndex(key);
+    return (nodes->getValue(index))->get(key, return_val);
+}
+
 void InternalNode::iterate()
 {
     int size = nodes->getSize();
@@ -364,6 +370,20 @@ void LeafNode::set(KeyType key, DataType value)
             return;
         }
     }
+}
+
+bool LeafNode::get(KeyType key, DataType &return_val)
+{
+    int size = values->getSize();
+    for (int i = 0; i < size; i++)
+    {
+        if (keys->getValue(i) == key)
+        {
+            return_val = values->getValue(i);
+            return true;
+        }
+    }
+    return false;
 }
 
 void LeafNode::iterate()

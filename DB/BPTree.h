@@ -13,6 +13,7 @@ public:
     bool insert(KeyType, DataType);
     bool remove(KeyType);
     bool set(KeyType, DataType);
+    bool get(KeyType, DataType &);
     void iterate();
     void printTree();
 

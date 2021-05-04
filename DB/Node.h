@@ -40,6 +40,7 @@ public:
     virtual Node *insert(KeyType, DataType) = 0;
     virtual Node *remove(KeyType) = 0;
     virtual void set(KeyType, DataType) = 0;
+    virtual bool get(KeyType, DataType &) = 0;
     virtual void iterate() = 0;
     virtual Node *getHead() = 0;
 
@@ -63,6 +64,7 @@ public:
     virtual Node *insert(KeyType, DataType);
     virtual Node *remove(KeyType);
     virtual void set(KeyType, DataType);
+    virtual bool get(KeyType, DataType &);
     virtual void iterate();
     virtual Node *getHead();
 
@@ -85,6 +87,7 @@ public:
     virtual Node *insert(KeyType, DataType);
     virtual Node *remove(KeyType);
     virtual void set(KeyType, DataType);
+    virtual bool get(KeyType, DataType &);
     virtual void iterate();
     virtual Node *getHead();
 
