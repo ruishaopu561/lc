@@ -1,8 +1,11 @@
 #include <iostream>
+#include <string>
 
 #include "List.h"
 #include "Node.h"
 #include "BPTree.h"
+#include "Parser.h"
+#include "Commander.h"
 
 using namespace std;
 
@@ -59,10 +62,19 @@ void test2()
     // create table **(int key, string value);
     // select * from **;
     // insert into ** value(key1, value1);
+
+    string command;
+    Commander *commander = new Commander();
+    commander->printHelpMessage();
+    while(true){
+        cout << endl << nextLineHeader;
+        getline(cin, command);
+        commander->addressCommand(command);
+    }
 }
 
 int main()
 {
-    test1();
+    // test1();
     test2();
 }
