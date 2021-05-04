@@ -21,6 +21,7 @@ private:
 
     string toLowerCase(string);
     string clearUnneceBlank(string);
+    void errorReport(ERROR);
 };
 
 #endif /* DATABASE_H */

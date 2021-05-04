@@ -15,7 +15,7 @@ void Database::addressCommand(string command)
 {
     if (command.size() > COMMANDLENGTH)
     {
-        cout << commandLongMessage;
+        errorReport(COMMANDTOOLONG);
         return;
     }
 
@@ -33,73 +33,48 @@ void Database::addressCommand(string command)
     }
     else if (command.substr(0, 6) == "create")
     {
-        cout << successMessage;
+        errorReport(OK);
     }
     else if (command.substr(0, 3) == "use")
     {
-        cout << successMessage;
+        errorReport(OK);
     }
     else if (command.substr(0, 4) == "drop")
     {
-        cout << successMessage;
+        errorReport(OK);
     }
     else if (command.substr(0, 6) == "rename")
     {
-        cout << successMessage;
+        errorReport(OK);
     }
     else if (command.substr(0, 6) == "insert")
     {
         ERROR err = table->insertRecord(command);
-        if (err == EXIST)
-        {
-            cout << existMessage;
-        }
-        else
-        {
-            cout << successMessage;
-        }
+        errorReport(err);
     }
     else if (command.substr(0, 6) == "delete")
     {
         ERROR err = table->deleteRecord(command);
-        if (err == NONEXIST)
-        {
-            cout << nonExistMessage;
-        }
-        else
-        {
-            cout << successMessage;
-        }
+        errorReport(err);
     }
     else if (command.substr(0, 6) == "update")
     {
         ERROR err = table->updateRecord(command);
-        if (err == NONEXIST)
-        {
-            cout << nonExistMessage;
-        }
-        else
-        {
-            cout << successMessage;
-        }
+        errorReport(err);
     }
     else if (command.substr(0, 6) == "select")
     {
         DataType value;
         ERROR err = table->searchRecord(command, value);
-        if (err == NONEXIST)
-        {
-            cout << nonExistMessage;
-        }
-        else
+        errorReport(err);
+        if (err == OK)
         {
             cout << value << endl;
-            cout << successMessage;
         }
     }
     else
     {
-        cout << syntaxEerrorMessage;
+        errorReport(SYNTAXERROR);
     }
 }
 
@@ -194,4 +169,28 @@ string Database::clearUnneceBlank(string str)
     }
 
     return ret;
+}
+
+void Database::errorReport(ERROR err)
+{
+    switch (err)
+    {
+    case OK:
+        cout << successMessage;
+        break;
+    case SYNTAXERROR:
+        cout << syntaxEerrorMessage;
+        break;
+    case EXIST:
+        cout << existMessage;
+        break;
+    case NONEXIST:
+        cout << nonExistMessage;
+        break;
+    case COMMANDTOOLONG:
+        cout << commandLongMessage;
+        break;
+    default:
+        return;
+    }
 }

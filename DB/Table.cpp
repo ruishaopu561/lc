@@ -15,7 +15,7 @@ ERROR Table::insertRecord(string command)
 {
     int key;
     char data[COMMANDLENGTH];
-    if (sscanf(command.c_str(), "insert into db %d %s;", &key, data) < 2)
+    if ((sscanf(command.c_str(), "insert into db %d %s;", &key, data) < 2))
     {
         return SYNTAXERROR;
     }
