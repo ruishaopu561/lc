@@ -1,18 +1,24 @@
-#include "Commander.h"
+#include "Database.h"
 
-Commander::Commander()
+Database::Database()
 {
-    parser = new Parser();
+    table = new Table();
 }
 
-Commander::~Commander()
+Database::~Database()
 {
-    delete parser;
-    parser = NULL;
+    delete table;
+    table = NULL;
 }
 
-void Commander::addressCommand(string command)
+void Database::addressCommand(string command)
 {
+    if (command.size() > COMMANDLENGTH)
+    {
+        cout << commandLongMessage;
+        return;
+    }
+
     command = clearUnneceBlank(command);
     command = toLowerCase(command);
 
@@ -21,33 +27,92 @@ void Commander::addressCommand(string command)
         cout << exitMessage;
         exit(0);
     }
-    else if (command.substr(0, 4) ==  "help")
+    else if (command.substr(0, 4) == "help")
     {
         printHelpMessage();
     }
-    else if (command.substr(0, 6) == "insert" ||
-             command.substr(0, 6) == "delete" ||
-             command.substr(0, 6) == "update" ||
-             command.substr(0, 6) == "select")
+    else if (command.substr(0, 6) == "create")
     {
-        parser->addressCommand(command);
+        cout << successMessage;
+    }
+    else if (command.substr(0, 3) == "use")
+    {
+        cout << successMessage;
+    }
+    else if (command.substr(0, 4) == "drop")
+    {
+        cout << successMessage;
+    }
+    else if (command.substr(0, 6) == "rename")
+    {
+        cout << successMessage;
+    }
+    else if (command.substr(0, 6) == "insert")
+    {
+        ERROR err = table->insertRecord(command);
+        if (err == EXIST)
+        {
+            cout << existMessage;
+        }
+        else
+        {
+            cout << successMessage;
+        }
+    }
+    else if (command.substr(0, 6) == "delete")
+    {
+        ERROR err = table->deleteRecord(command);
+        if (err == NONEXIST)
+        {
+            cout << nonExistMessage;
+        }
+        else
+        {
+            cout << successMessage;
+        }
+    }
+    else if (command.substr(0, 6) == "update")
+    {
+        ERROR err = table->updateRecord(command);
+        if (err == NONEXIST)
+        {
+            cout << nonExistMessage;
+        }
+        else
+        {
+            cout << successMessage;
+        }
+    }
+    else if (command.substr(0, 6) == "select")
+    {
+        DataType value;
+        ERROR err = table->searchRecord(command, value);
+        if (err == NONEXIST)
+        {
+            cout << nonExistMessage;
+        }
+        else
+        {
+            cout << value << endl;
+            cout << successMessage;
+        }
     }
     else
     {
-        cout << errorMessage << nextLineHeader;
+        cout << syntaxEerrorMessage;
     }
 }
 
-void Commander::printTable(int, DataType)
+void Database::printTable(int, DataType)
 {
 }
 
-bool Commander::is_file_exist(const char *fileName)
+bool Database::is_file_exist(const char *fileName)
 {
     return true;
 }
 
-void Commander::printHelpMessage()
+void Database::printHelpMessage()
 {
     cout << "*********************************************************************************************" << endl
          << endl
@@ -66,10 +131,10 @@ void Commander::printHelpMessage()
          << "  select * from db where id={index};                           search a record by index;" << endl
          << "  select * from db where id in({minIndex},{maxIndex});         search records between indexs;" << endl
          << "*********************************************************************************************" << endl
-         ;
+         << endl;
 }
 
-string Commander::toLowerCase(string str)
+string Database::toLowerCase(string str)
 {
     string ret = "";
     int size = str.size();
@@ -78,14 +143,16 @@ string Commander::toLowerCase(string str)
         if (str[i] >= 'A' && str[i] <= 'Z')
         {
             ret += (str[i] + 32);
-        }else{
+        }
+        else
+        {
             ret += str[i];
         }
     }
     return ret;
 }
 
-string Commander::clearUnneceBlank(string str)
+string Database::clearUnneceBlank(string str)
 {
     string ret = "";
     bool blank = false;

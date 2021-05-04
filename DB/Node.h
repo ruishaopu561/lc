@@ -39,8 +39,9 @@ public:
     // 如有分裂，返回新节点
     virtual Node *insert(KeyType, DataType) = 0;
     virtual Node *remove(KeyType) = 0;
-    virtual void set(KeyType, DataType) = 0;
+    virtual bool set(KeyType, DataType) = 0;
     virtual bool get(KeyType, DataType &) = 0;
+    virtual bool find(KeyType) = 0;
     virtual void iterate() = 0;
     virtual Node *getHead() = 0;
 
@@ -63,8 +64,9 @@ public:
 
     virtual Node *insert(KeyType, DataType);
     virtual Node *remove(KeyType);
-    virtual void set(KeyType, DataType);
+    virtual bool set(KeyType, DataType);
     virtual bool get(KeyType, DataType &);
+    virtual bool find(KeyType);
     virtual void iterate();
     virtual Node *getHead();
 
@@ -86,8 +88,9 @@ public:
 
     virtual Node *insert(KeyType, DataType);
     virtual Node *remove(KeyType);
-    virtual void set(KeyType, DataType);
+    virtual bool set(KeyType, DataType);
     virtual bool get(KeyType, DataType &);
+    virtual bool find(KeyType);
     virtual void iterate();
     virtual Node *getHead();
 

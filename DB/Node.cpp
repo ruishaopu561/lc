@@ -191,16 +191,22 @@ Node *InternalNode::remove(KeyType key)
     }
 }
 
-void InternalNode::set(KeyType key, DataType value)
+bool InternalNode::set(KeyType key, DataType value)
 {
     int index = getKeyIndex(key);
-    (nodes->getValue(index))->set(key, value);
+    return (nodes->getValue(index))->set(key, value);
 }
 
 bool InternalNode::get(KeyType key, DataType &return_val)
 {
     int index = getKeyIndex(key);
     return (nodes->getValue(index))->get(key, return_val);
+}
+
+bool InternalNode::find(KeyType key)
+{
+    int index = getKeyIndex(key);
+    return (nodes->getValue(index))->find(key);
 }
 
 void InternalNode::iterate()
@@ -359,7 +365,7 @@ Node *LeafNode::remove(KeyType key)
     return NULL;
 }
 
-void LeafNode::set(KeyType key, DataType value)
+bool LeafNode::set(KeyType key, DataType value)
 {
     int size = values->getSize();
     for (int i = 0; i < size; i++)
@@ -367,9 +373,10 @@ void LeafNode::set(KeyType key, DataType value)
         if (keys->getValue(i) == key)
         {
             values->setValue(i, value);
-            return;
+            return true;
         }
     }
+    return false;
 }
 
 bool LeafNode::get(KeyType key, DataType &return_val)
@@ -380,6 +387,19 @@ bool LeafNode::get(KeyType key, DataType &return_val)
         if (keys->getValue(i) == key)
         {
             return_val = values->getValue(i);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool LeafNode::find(KeyType key)
+{
+    int size = values->getSize();
+    for (int i = 0; i < size; i++)
+    {
+        if (keys->getValue(i) == key)
+        {
             return true;
         }
     }

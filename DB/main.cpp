@@ -4,8 +4,8 @@
 #include "List.h"
 #include "Node.h"
 #include "BPTree.h"
-#include "Parser.h"
-#include "Commander.h"
+#include "Table.h"
+#include "Database.h"
 
 using namespace std;
 
@@ -64,12 +64,13 @@ void test2()
     // insert into ** value(key1, value1);
 
     string command;
-    Commander *commander = new Commander();
-    commander->printHelpMessage();
-    while(true){
-        cout << endl << nextLineHeader;
+    Database *db = new Database();
+    db->printHelpMessage();
+    while (true)
+    {
+        cout << nextLineHeader;
         getline(cin, command);
-        commander->addressCommand(command);
+        db->addressCommand(command);
     }
 }
 

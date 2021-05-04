@@ -13,13 +13,19 @@ BPTree::~BPTree()
     head = NULL;
 }
 
-bool BPTree::insert(KeyType key, DataType value)
+ERROR BPTree::insert(KeyType key, DataType value)
 {
     if (root == NULL)
     {
         root = new LeafNode();
         head = (void *)root;
     }
+
+    if (root->find(key))
+    {
+        return EXIST;
+    }
+
     Node *child = root->insert(key, value);
     if (child)
     {
@@ -43,43 +49,53 @@ bool BPTree::insert(KeyType key, DataType value)
         head = (void *)root->getHead();
     }
 
-    return true;
+    return OK;
 }
 
-bool BPTree::remove(KeyType key)
+ERROR BPTree::remove(KeyType key)
 {
-    if (!root)
+    if (!root || !root->find(key))
     {
-        return false;
+        return NONEXIST;
     }
 
     Node *child = root->remove(key);
-    if(child)
+    if (child)
     {
         root = child;
         root->setIsRoot(true);
         head = (void *)root->getHead();
     }
-    return true;
+    return OK;
 }
 
-bool BPTree::set(KeyType key, DataType value)
+ERROR BPTree::set(KeyType key, DataType value)
 {
-    if (!root)
+    if (!root || !root->find(key))
     {
-        return false;
+        return NONEXIST;
     }
 
-    root->set(key, value);
-    return true;
+    if (root->set(key, value))
+    {
+        return OK;
+    }
+    else
+    {
+        return NONEXIST;
+    }
 }
 
-bool BPTree::get(KeyType key, DataType &return_val)
+ERROR BPTree::get(KeyType key, DataType &return_val)
 {
-    if(!root){
-        return false;
+    if (root && root->get(key, return_val))
+    {
+        return OK;
     }
-    return root->get(key, return_val);
+    else
+    {
+        return NONEXIST;
+    }
 }
 
 void BPTree::iterate()
